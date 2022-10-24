@@ -1,9 +1,8 @@
-function Engineer() {
-    return (
-        <div className="bg-info vh-100">
-            Engineer Page 
-        </div>
-    )
+
+const Engineer = () => {
+  return (
+    <div>Engineer</div>
+  )
 }
 
-export default Engineer; 
+export default Engineer

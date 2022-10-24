@@ -60,10 +60,7 @@ function Login() {
         }).catch((error) => {
             console.log(error)
         })
-
     }
-
-
 
 
     const toggleSignup = () => {
@@ -77,7 +74,6 @@ function Login() {
         <div className='bg-info d-flex justify-content-center align-items-center vh-100 '>
             <div className="card p-3 rounded-4 shadow-lg" style={{ width: 20 + 'rem' }}>
                 <h4 className='text-center text-info'>{showSignup ? "Sign Up" : "Sign In"}</h4>
-
                 <form onSubmit={showSignup ? signupFn : loginFn}>
                     <div className="input-group">
                         <input type="text" className='form-control m-1' placeholder="User Id" value={userId} onChange={updateSignupData} id="userid" />
@@ -102,32 +98,20 @@ function Login() {
                                 >
                                     <Dropdown.Item eventKey="CUSTOMER">CUSTOMER</Dropdown.Item>
                                     <Dropdown.Item eventKey="ENGINEER">ENGINEER</Dropdown.Item>
-
                                 </DropdownButton>
-
                             </div>
-
-
                         </>
                     }
                     <div className="input-group">
                         <input type="password" className='form-control m-1' placeholder="Password" id="password" value={password} onChange={updateSignupData} />
                     </div>
-
                     <div className="input-group">
                         <input type="submit" className='btn btn-info fw-bolder form-control m-1 text-white' value={showSignup ? "Sign Up" : "Sign In "} />
                     </div>
-
                     <div className="m-1 text-center text-primary" onClick={toggleSignup}>
                         {showSignup ? "Already have an account? Signin" : "Don't have an account? Sign Up"}
-
                     </div>
-
-
-
                 </form>
-
-
             </div>
         </div>
     )
