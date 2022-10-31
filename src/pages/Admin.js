@@ -4,13 +4,28 @@ import MaterialTable from "@material-table/core";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import {ExportCsv, ExportPdf} from '@material-table/exporters'
 import { Modal, Button} from 'react-bootstrap'
+import Widget from "../components/Widget";
 
 
 import Sidebar from "../components/Sidebar";
 
+// TASKS : 
+/*
+Create a common dynamic component for widgets 
+// GET API for users : userid
+// Create a func getAllUsers() => fetch the api => staore the array of objects in state => userDetails
+Pass the userdetails in material table 
 
+// PUT API dor users : userid, updated new data -> change of status 
+1/ Grab the curr user using onRowClick
+2. STore the details of the user -> open a modal 
+3. Modal will show all the curr details -> print all user details in the user modal 
+4. Grab the new updated value and store it ina state 
+5. Fetch the put api -> userid, updated data-> log the response 
+*/
 
 // put logic 
+  
 /*
 1. Grab the curr ticket : ticket id , all the curr data along with it 
 2. Store the curr Ticket in a state -> display the curr ticket details in the modal 
@@ -41,7 +56,14 @@ const userColumns = [
   { title: "NAME", field: "name" },
   { title: "EMAIL", field: "email" },
   { title: "ROLE", field: "userTypes" },
-  { title: "STATUS", field: "status" },
+  { title: "STATUS", field: "status",
+   lookup: {
+    "APPROVED": "APPROVED", 
+    "REJECTED": "REJECTED",
+    "PENDING": "PENDING"
+
+  }  
+},
 ];
 
 
@@ -50,7 +72,10 @@ function Admin() {
   const [ticketDetails, setTicketDetails] = useState([]);
   const [ticketStatusCount, setTicketStatusCount] = useState({});
   const [ticketUpdationModal, setTicketUpdationModal] = useState(false);
-  const [selectedCurrTicket, setSelectedCurrTicket] = useState({})
+  const [selectedCurrTicket, setSelectedCurrTicket] = useState({});
+
+    // open and close user modal 
+    // const [userUpdationModal, setUserUpdationModal] = useState(false);
 
   const updateSelectedCurrTicket = (data) => setSelectedCurrTicket(data)
 
@@ -168,6 +193,8 @@ function Admin() {
       {/* widgets start */}
       <div className="row ps-5 ms-5 mb-5">
         {/* w1 */}
+        <Widget color="primary" title="OPEN" icon="envelope-open" ticketCount={ticketStatusCount.open} pathColor="darkblue" />
+
         <div className="col-xs-12 col-md-6 col-lg-3 my-1">
           <div
             className="card shadow bg-primary bg-opacity-50 text-center"
