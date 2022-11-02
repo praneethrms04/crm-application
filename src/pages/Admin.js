@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import { fetchTicket, ticketUpdation } from "../api/tickets";
 import MaterialTable from "@material-table/core";
-import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import { ExportCsv, ExportPdf } from "@material-table/exporters";
 import { Modal, Button } from "react-bootstrap";
+
 import Widget from "../components/Widget";
+import { fetchTicket, ticketUpdation } from "../api/tickets";
 
 import Sidebar from "../components/Sidebar";
 
@@ -73,17 +73,23 @@ function Admin() {
   const [ticketUpdationModal, setTicketUpdationModal] = useState(false);
   const [selectedCurrTicket, setSelectedCurrTicket] = useState({});
 
+  // get api and stor the data
+  // const [userDetails, setUserDetails] = useState([]);
   // open and close user modal
-  // const [userUpdationModal, setUserUpdationModal] = useState(false);
+  const [userUpdationModal, setUserUpdationModal] = useState(false);
+  // store the curr user details and the updated user details
+  // const [selectedCurrUser, setSelectedCurrUser] = useState({});
+
+  const [message, setMessage] = useState("");
 
   const updateSelectedCurrTicket = (data) => setSelectedCurrTicket(data);
 
-  const openTicketUpdationModal = () => setTicketUpdationModal(true);
+  // const openTicketUpdationModal = () => setTicketUpdationModal(true);
   const closeTicketUpdationModal = () => setTicketUpdationModal(false);
 
   useEffect(() => {
     fetchTickets();
-  }, []);
+  },[]);
 
   const fetchTickets = () => {
     fetchTicket()
@@ -91,13 +97,10 @@ function Admin() {
         setTicketDetails(response.data);
         updateTicketCount(response.data);
       })
-      .catch((error) => {
-        // setMessage(error.response.data.message);
-        console.log(error);
+      .catch(function (error) {
+        setMessage(error.response.data.message);
       });
   };
-
-  // console.log('***', ticketDetails);
 
   const updateTicketCount = (tickets) => {
     // filling this empty object with the ticket counts
@@ -120,12 +123,10 @@ function Admin() {
         data.blocked += 1;
       }
     });
+
     setTicketStatusCount(Object.assign({}, data));
   };
-
-  console.log("***", ticketStatusCount);
-
-  //2. Storing teh curr ticket details in a state
+  // Storing teh curr ticket details in a state
   const editTicket = (ticketDetail) => {
     const ticket = {
       assignee: ticketDetail.assignee,
@@ -136,13 +137,11 @@ function Admin() {
       status: ticketDetail.status,
       ticketPriority: ticketDetail.ticketPriority,
     };
-    console.log("selected tickets", ticketDetail);
+    console.log("selected ticket", ticketDetail);
     setTicketUpdationModal(true);
     setSelectedCurrTicket(ticket);
   };
-
   // 3. grabbing teh new updated data and storing it in a state
-
   const onTicketUpdate = (e) => {
     if (e.target.name === "ticketPriority")
       selectedCurrTicket.ticketPriority = e.target.value;
@@ -153,11 +152,10 @@ function Admin() {
 
     updateSelectedCurrTicket(Object.assign({}, selectedCurrTicket));
 
-    console.log("current ticket", selectedCurrTicket);
+    console.log(selectedCurrTicket);
   };
 
   //  4. Call the api with the new updated data
-
   const updateTicket = (e) => {
     e.preventDefault();
     ticketUpdation(selectedCurrTicket.id, selectedCurrTicket)
@@ -169,7 +167,7 @@ function Admin() {
         fetchTickets();
       })
       .catch(function (error) {
-        console.log(error);
+        setMessage(error.response.data.message);
       });
   };
 
@@ -179,7 +177,7 @@ function Admin() {
       {/* welcome text */}
       <div className="container p-5">
         <h3 className="text-center text-danger">
-          Welcome,{localStorage.getItem("name")}
+          Welcome hello,{localStorage.getItem("name")}
         </h3>
         <p className="text-muted text-center">
           Take a look at your admin stats below
@@ -195,141 +193,37 @@ function Admin() {
           ticketCount={ticketStatusCount.open}
           pathColor="darkblue"
         />
-
-        <div className="col-xs-12 col-md-6 col-lg-3 my-1">
-          <div
-            className="card shadow bg-primary bg-opacity-50 text-center"
-            style={{ width: 15 + "rem" }}
-          >
-            <h5 className="card-subtitle fw-bolder my-3 text-primary">
-              <i className="bi bi-envelope-open text-primary mx-2"></i>Open
-            </h5>
-            <hr />
-            <div className="row mb-2 d-flex align-items-center">
-              <div className="col text-primary mx-4 fw-bolder display-6">
-                {ticketStatusCount.open}
-              </div>
-              <div className="col">
-                {/* Size of circular bar */}
-                <div style={{ width: 40, height: 40 }}>
-                  {/* How to use ? 
-                    Import from top
-                    value={the count of tickets}
-                    buildStyles({}) : a function that accepts obj. Obj takes css styles in key value format. Colors can be accepted in hex, rgpa, and text names
-                  */}
-                  <CircularProgressbar
-                    value={ticketStatusCount.open}
-                    styles={buildStyles({
-                      pathColor: "darkblue",
-                    })}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
         {/* w2 */}
-        <div className="col-xs-12 col-md-6 col-lg-3 my-1">
-          <div
-            className="card shadow bg-warning bg-opacity-50 text-center"
-            style={{ width: 15 + "rem" }}
-          >
-            <h5 className="card-subtitle fw-bolder my-3 text-warning">
-              <i className="bi  bi-hourglass-split text-warning mx-2"></i>
-              Progress
-            </h5>
-            <hr />
-            <div className="row mb-2 d-flex align-items-center">
-              <div className="col text-warning mx-4 fw-bolder display-6">
-                {ticketStatusCount.progress}
-              </div>
-              <div className="col">
-                {/* Size of circular bar */}
-                <div style={{ width: 40, height: 40 }}>
-                  {/* How to use ? 
-                    Import from top
-                    value={the count of tickets}
-                    buildStyles({}) : a function that accepts obj. Obj takes css styles in key value format. Colors can be accepted in hex, rgpa, and text names
-                  */}
-                  <CircularProgressbar
-                    value={ticketStatusCount.progress}
-                    styles={buildStyles({
-                      pathColor: "darkgoldenrod",
-                    })}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Widget
+          color="warning"
+          title="PROGRESS"
+          icon="hourglass-split"
+          ticketCount={ticketStatusCount.progress}
+          pathColor="darkgoldenrod"
+        />
         {/* w3 */}
-        <div className="col-xs-12 col-md-6 col-lg-3 my-1">
-          <div
-            className="card shadow bg-success bg-opacity-50 text-center"
-            style={{ width: 15 + "rem" }}
-          >
-            <h5 className="card-subtitle fw-bolder my-3 text-success">
-              <i className="bi bi-check2-circle  text-success mx-2"></i>Closed
-            </h5>
-            <hr />
-            <div className="row mb-2 d-flex align-items-center">
-              <div className="col text-success mx-4 fw-bolder display-6">
-                {ticketStatusCount.closed}
-              </div>
-              <div className="col">
-                {/* Size of circular bar */}
-                <div style={{ width: 40, height: 40 }}>
-                  {/* How to use ? 
-                    Import from top
-                    value={the count of tickets}
-                    buildStyles({}) : a function that accepts obj. Obj takes css styles in key value format. Colors can be accepted in hex, rgpa, and text names
-                  */}
-                  <CircularProgressbar
-                    value={ticketStatusCount.closed}
-                    styles={buildStyles({
-                      pathColor: "darkgreen",
-                    })}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Widget
+          color="success"
+          title="CLOSED"
+          icon="check2-circle"
+          ticketCount={ticketStatusCount.closed}
+          pathColor="darkgreen"
+        />
         {/* w4 */}
-        <div className="col-xs-12 col-md-6 col-lg-3 my-1">
-          <div
-            className="card shadow bg-secondary bg-opacity-50 text-center"
-            style={{ width: 15 + "rem" }}
-          >
-            <h5 className="card-subtitle fw-bolder my-3 text-secondary">
-              <i className="bi bi-slash-circle text-secondary mx-2"></i>Blocked
-            </h5>
-            <hr />
-            <div className="row mb-2 d-flex align-items-center">
-              <div className="col text-secondary mx-4 fw-bolder display-6">
-                {ticketStatusCount.blocked}
-              </div>
-              <div className="col">
-                {/* Size of circular bar */}
-                <div style={{ width: 40, height: 40 }}>
-                  {/* How to use ? 
-                    Import from top
-                    value={the count of tickets}
-                    buildStyles({}) : a function that accepts obj. Obj takes css styles in key value format. Colors can be accepted in hex, rgpa, and text names
-                  */}
-                  <CircularProgressbar
-                    value={ticketStatusCount.blocked}
-                    styles={buildStyles({
-                      pathColor: "darkblue",
-                    })}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+
+        <Widget
+          color="secondary"
+          title="BLOCKED"
+          icon="slash-circle"
+          ticketCount={ticketStatusCount.blocked}
+          pathColor="red"
+        />
       </div>
       {/* widgets end */}
+      <div className="text-center">
+        <h5 className="text-info">{message}</h5>
+      </div>
+
       <div className="container">
         <MaterialTable
           // 1. grabbing the specific ticket from the row
@@ -361,7 +255,7 @@ function Admin() {
           }}
         />
 
-        <button onClick={openTicketUpdationModal}>ticket updation</button>
+        {/* <button onClick={openTicketUpdationModal}>ticket updation</button> */}
         {ticketUpdationModal ? (
           <Modal
             show={ticketUpdationModal}
@@ -472,6 +366,63 @@ function Admin() {
             </Modal.Body>
           </Modal>
         ) : null}
+
+        {userUpdationModal ? (
+          <Modal
+            show={userUpdationModal}
+            onHide={closeTicketUpdationModal}
+            backdrop="static"
+            centered>
+            <Modal.Header closeButton>
+              <Modal.Title>Update USER DETAILS</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+              {/* submit the details and we will call the api  */}
+              <form 
+              // onSubmit={updateUser}
+              >
+                <div className="p-1">
+                  <h5 className="card-subtitle mb-2 text-danger">User ID :  </h5>
+                </div>
+                <div className="input-group mb-2">
+                  {/* If equal labels needed , set height and width for labelSize */}
+                  <label className='label input-group-text label-md labelSize'>Name</label>
+                  <input type="text" disabled className='form-control' />
+                </div>
+
+                <div className="input-group mb-2">
+                  <label className='label input-group-text label-md'>Email</label>
+                  <input type="text" disabled  className='form-control' />
+                </div>
+                <div className="input-group mb-2">
+                  <label className='label input-group-text label-md'>Role</label>
+                  <input type="text" disabled  className='form-control' />
+                 
+                </div>
+                {/* Onchange : grabbing the new updates value from UI  */}
+               
+                <div className="input-group mb-2">
+                  <label className='label input-group-text label-md'>Status</label>
+                  <select className='form-select' name="status" value={selectedCurrTicket.status}  
+                  // onChange={onUserUpdate}
+                  >
+                    <option value="APPROVED">APPROVED</option>
+                    <option value="PENDING">PENDING</option>
+                    <option value="REJECTED">REJECTED</option>
+
+                  </select>
+                </div>
+              
+
+                <div className="d-flex justify-content-end">
+                  <Button variant='secondary' className="m-1" onClick={() => closeTicketUpdationModal}>Cancel</Button>
+                  <Button variant='danger' className="m-1" type="submit">Update</Button>
+
+                </div>
+              </form>
+            </Modal.Body>
+          </Modal>
+        ) : null}
         <hr />
         <MaterialTable
           title="USER DETAILS"
@@ -501,6 +452,8 @@ function Admin() {
           }}
         />
       </div>
+      
+      <button className="btn btn-danger m-1" onClick={()=> setUserUpdationModal(true)}>Update user details</button>
     </div>
   );
 }
