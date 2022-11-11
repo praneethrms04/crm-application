@@ -15,6 +15,20 @@ export async function fetchTicket() {
     }
   );
 }
+
+// Post api :
+
+export async function ticketCreation(data) {
+  return await axios.post(
+    `${BASE_URL}/crm/api/v1/tickets/`,data,
+    {
+      headers: {
+        "x-access-token": localStorage.getItem("token"),
+      },
+    }
+  );
+}
+
 // PUT API : passing the id of the ticket and the new updated data
 
 export async function ticketUpdation(id, selectedCurrTicket) {

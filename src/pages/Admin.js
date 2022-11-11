@@ -4,15 +4,17 @@ import { ExportCsv, ExportPdf } from "@material-table/exporters";
 import { Modal, Button } from "react-bootstrap";
 
 import Widget from "../components/Widget";
-import { fetchTicket, ticketUpdation } from "../api/tickets";
-
 import Sidebar from "../components/Sidebar";
+import { fetchTicket, ticketUpdation } from "../api/tickets";
+import { getAllUser, updateUserData } from "../api/user.js";
+
+// css
 
 // TASKS :
 /*
-Create a common dynamic component for widgets 
-// GET API for users : userid
-// Create a func getAllUsers() => fetch the api => staore the array of objects in state => userDetails
+Create a common dynamic component for widgets ->  done
+// 1. GET API for users : userid
+// 2. Create a func getAllUsers() => fetch the api => staore the array of objects in state => userDetails
 Pass the userdetails in material table 
 
 // PUT API dor users : userid, updated new data -> change of status 
@@ -24,7 +26,6 @@ Pass the userdetails in material table
 */
 
 // put logic
-
 /*
 1. Grab the curr ticket : ticket id , all the curr data along with it 
 2. Store the curr Ticket in a state -> display the curr ticket details in the modal 
@@ -50,15 +51,14 @@ const columns = [
     },
   },
 ];
-
 const userColumns = [
-  { title: "ID", field: "id" },
+  { title: "ID", field: "userId" },
   { title: "NAME", field: "name" },
   { title: "EMAIL", field: "email" },
   { title: "ROLE", field: "userTypes" },
   {
     title: "STATUS",
-    field: "status",
+    field: "userStatus",
     lookup: {
       APPROVED: "APPROVED",
       REJECTED: "REJECTED",
@@ -68,28 +68,35 @@ const userColumns = [
 ];
 
 function Admin() {
-  const [ticketDetails, setTicketDetails] = useState([]);
-  const [ticketStatusCount, setTicketStatusCount] = useState({});
-  const [ticketUpdationModal, setTicketUpdationModal] = useState(false);
-  const [selectedCurrTicket, setSelectedCurrTicket] = useState({});
-
   // get api and stor the data
   // const [userDetails, setUserDetails] = useState([]);
   // open and close user modal
-  const [userUpdationModal, setUserUpdationModal] = useState(false);
-  // store the curr user details and the updated user details
-  // const [selectedCurrUser, setSelectedCurrUser] = useState({});
-
-  const [message, setMessage] = useState("");
+  const [userList, setUserList] = useState([]);
+  const [userDetail, setUserDetail] = useState({});
+  const [ticketDetails, setTicketDetails] = useState([]);
+  const [ticketUpdationModal, setTicketUpdationModal] = useState(false);
+  const [selectedCurrTicket, setSelectedCurrTicket] = useState({});
+  const [ticketStatusCount, setTicketStatusCount] = useState({});
 
   const updateSelectedCurrTicket = (data) => setSelectedCurrTicket(data);
-
-  // const openTicketUpdationModal = () => setTicketUpdationModal(true);
   const closeTicketUpdationModal = () => setTicketUpdationModal(false);
+  const [userModal, setUserModal] = useState(false);
+  // store the curr user details and the updated user details
+  // const [selectedCurrUser, setSelectedCurrUser] = useState({});
+  const [message, setMessage] = useState("");
+  const showUserModal = () => setUserModal(true);
+  const closeUserModal = () => {
+    setUserModal(false);
+    setUserDetail({});
+  };
 
   useEffect(() => {
-    fetchTickets();
-  },[]);
+    (async () => {
+      fetchUsers("");
+      fetchTickets();
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchTickets = () => {
     fetchTicket()
@@ -99,6 +106,20 @@ function Admin() {
       })
       .catch(function (error) {
         setMessage(error.response.data.message);
+      });
+  };
+  const fetchUsers = (userId) => {
+    getAllUser(userId)
+      .then(function (response) {
+        if (response.status === 200) {
+          if (userId) {
+            setUserDetail(response.data[0]);
+            showUserModal();
+          } else setUserList(response.data);
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
       });
   };
 
@@ -137,7 +158,6 @@ function Admin() {
       status: ticketDetail.status,
       ticketPriority: ticketDetail.ticketPriority,
     };
-    console.log("selected ticket", ticketDetail);
     setTicketUpdationModal(true);
     setSelectedCurrTicket(ticket);
   };
@@ -151,8 +171,6 @@ function Admin() {
       selectedCurrTicket.description = e.target.value;
 
     updateSelectedCurrTicket(Object.assign({}, selectedCurrTicket));
-
-    console.log(selectedCurrTicket);
   };
 
   //  4. Call the api with the new updated data
@@ -160,7 +178,6 @@ function Admin() {
     e.preventDefault();
     ticketUpdation(selectedCurrTicket.id, selectedCurrTicket)
       .then(function (response) {
-        console.log(response);
         // closing the modal
         setTicketUpdationModal(false);
         // fetching the tickets again to update the table and the widgets
@@ -171,21 +188,54 @@ function Admin() {
       });
   };
 
+  const updateUserDetail = () => {
+    const data = {
+      userType: userDetail.userTypes,
+      userStatus: userDetail.userStatus,
+      userName: userDetail.name,
+    };
+    updateUserData(userDetail.userId, data)
+      .then(function (response) {
+        if (response.status === 200) {
+          setMessage(response.message);
+          let idx = userList.findIndex(
+            (obj) => obj.userId === userDetail.userId
+          );
+          userList[idx] = userDetail;
+          closeUserModal();
+          setMessage("User detail updated successfully");
+        }
+      })
+      .catch(function (error) {
+        if (error.status === 400) setMessage(error.message);
+        else console.log(error);
+      });
+  };
+
+  const changeUserDetail = (e) => {
+    if (e.target.name === "status") userDetail.userStatus = e.target.value;
+    else if (e.target.name === "name") userDetail.name = e.target.value;
+    else if (e.target.name === "type") userDetail.userTypes = e.target.value;
+    setUserDetail(userDetail);
+    setUserModal(e.target.value);
+  };
+
   return (
     <div className="bg-light vh-100%">
       <Sidebar />
-      {/* welcome text */}
+
+      {/* Welcome text */}
       <div className="container p-5">
         <h3 className="text-center text-danger">
-          Welcome hello,{localStorage.getItem("name")}
+          Welcome, {localStorage.getItem("name")}!
         </h3>
         <p className="text-muted text-center">
-          Take a look at your admin stats below
+          Take a quick look at your admin stats below
         </p>
       </div>
-      {/* widgets start */}
-      <div className="row ps-5 ms-5 mb-5">
-        {/* w1 */}
+
+      <div className="row ms-5 ps-5 mb-5">
+        {/*  color, title, icon, ticketCount, pathColor  */}
         <Widget
           color="primary"
           title="OPEN"
@@ -193,37 +243,31 @@ function Admin() {
           ticketCount={ticketStatusCount.open}
           pathColor="darkblue"
         />
-        {/* w2 */}
         <Widget
           color="warning"
           title="PROGRESS"
           icon="hourglass-split"
           ticketCount={ticketStatusCount.progress}
-          pathColor="darkgoldenrod"
+          pathColor="darkblue"
         />
-        {/* w3 */}
         <Widget
           color="success"
           title="CLOSED"
           icon="check2-circle"
           ticketCount={ticketStatusCount.closed}
-          pathColor="darkgreen"
+          pathColor="darkblue"
         />
-        {/* w4 */}
-
         <Widget
           color="secondary"
           title="BLOCKED"
           icon="slash-circle"
-          ticketCount={ticketStatusCount.blocked}
-          pathColor="red"
+          ticketCount={ticketStatusCount.bloocked}
+          pathColor="darkblue"
         />
       </div>
-      {/* widgets end */}
       <div className="text-center">
         <h5 className="text-info">{message}</h5>
       </div>
-
       <div className="container">
         <MaterialTable
           // 1. grabbing the specific ticket from the row
@@ -240,6 +284,7 @@ function Admin() {
             rowStyle: {
               backgroundColor: "#eee",
             },
+
             exportMenu: [
               {
                 label: "Export Pdf",
@@ -254,8 +299,37 @@ function Admin() {
             ],
           }}
         />
+        <hr />
 
-        {/* <button onClick={openTicketUpdationModal}>ticket updation</button> */}
+        <MaterialTable
+          onRowClick={(event, rowData) => fetchUsers(rowData.userId)}
+          data={userList}
+          columns={userColumns}
+          options={{
+            filtering: true,
+            sorting: true,
+            exportMenu: [
+              {
+                label: "Export PDF",
+                exportFunc: (cols, datas) =>
+                  ExportPdf(cols, datas, "UserRecords"),
+              },
+              {
+                label: "Export CSV",
+                exportFunc: (cols, datas) =>
+                  ExportCsv(cols, datas, "userRecords"),
+              },
+            ],
+            headerStyle: {
+              backgroundColor: "darkblue",
+              color: "#FFF",
+            },
+            rowStyle: {
+              backgroundColor: "#EEE",
+            },
+          }}
+          title="USER RECORDS"
+        />
         {ticketUpdationModal ? (
           <Modal
             show={ticketUpdationModal}
@@ -271,7 +345,8 @@ function Admin() {
               <form onSubmit={updateTicket}>
                 <div className="p-1">
                   <h5 className="card-subtitle mb-2 text-danger">
-                    User ID : {selectedCurrTicket.id}
+                    {" "}
+                    ID : {selectedCurrTicket.id}{" "}
                   </h5>
                 </div>
                 <div className="input-group mb-2">
@@ -303,7 +378,7 @@ function Admin() {
                     Assignee
                   </label>
                   <select className="form-control" name="assignee">
-                    <option>Praneeth</option>
+                    <option>Utkarshini</option>
                   </select>
                 </div>
                 {/* Onchange : grabbing teh new updates values from UI  */}
@@ -336,20 +411,19 @@ function Admin() {
                   </select>
                 </div>
                 <div className="input-group mb-2">
-                  <label
-                    className="label input-group-text label-md"
-                    onChange={onTicketUpdate}
-                  >
+                  <label className="label input-group-text label-md">
                     Description
                   </label>
                   <textarea
                     type="text"
                     value={selectedCurrTicket.description}
+                    onChange={onTicketUpdate}
                     className=" md-textarea form-control"
                     rows="3"
                     name="description"
                   />
                 </div>
+
                 <div className="d-flex justify-content-end">
                   <Button
                     variant="secondary"
@@ -367,93 +441,110 @@ function Admin() {
           </Modal>
         ) : null}
 
-        {userUpdationModal ? (
+        {userModal ? (
           <Modal
-            show={userUpdationModal}
-            onHide={closeTicketUpdationModal}
+            show={userModal}
+            onHide={closeUserModal}
             backdrop="static"
-            centered>
+            keyboard={false}
+            centered
+          >
             <Modal.Header closeButton>
-              <Modal.Title>Update USER DETAILS</Modal.Title>
+              <Modal.Title>Edit Details</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-              {/* submit the details and we will call the api  */}
-              <form 
-              // onSubmit={updateUser}
-              >
+              <form onSubmit={updateUserDetail}>
                 <div className="p-1">
-                  <h5 className="card-subtitle mb-2 text-danger">User ID :  </h5>
-                </div>
-                <div className="input-group mb-2">
-                  {/* If equal labels needed , set height and width for labelSize */}
-                  <label className='label input-group-text label-md labelSize'>Name</label>
-                  <input type="text" disabled className='form-control' />
-                </div>
+                  <h5 className="card-subtitle mb-2 text-primary lead">
+                    User ID: {userDetail.userId}
+                  </h5>
+                  <hr />
+                  <div className="input-group mb-3">
+                    <label className="label input-group-text label-md ">
+                      Name
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="name"
+                      value={userDetail.name}
+                      disabled
+                    />
+                  </div>
+                  <div className="input-group mb-3">
+                    <label className="label input-group-text label-md ">
+                      Email
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      name="name"
+                      value={userDetail.email}
+                      onChange={changeUserDetail}
+                      disabled
+                    />
+                  </div>
 
-                <div className="input-group mb-2">
-                  <label className='label input-group-text label-md'>Email</label>
-                  <input type="text" disabled  className='form-control' />
-                </div>
-                <div className="input-group mb-2">
-                  <label className='label input-group-text label-md'>Role</label>
-                  <input type="text" disabled  className='form-control' />
-                 
-                </div>
-                {/* Onchange : grabbing the new updates value from UI  */}
-               
-                <div className="input-group mb-2">
-                  <label className='label input-group-text label-md'>Status</label>
-                  <select className='form-select' name="status" value={selectedCurrTicket.status}  
-                  // onChange={onUserUpdate}
-                  >
-                    <option value="APPROVED">APPROVED</option>
-                    <option value="PENDING">PENDING</option>
-                    <option value="REJECTED">REJECTED</option>
+                  <div className="input-group mb-3">
+                    <label className="label input-group-text label-md ">
+                      Type
+                    </label>
+                    <select
+                      className="form-select"
+                      name="type"
+                      value={userDetail.userTypes}
+                      disabled
+                    >
+                      <option value="ADMIN">ADMIN</option>
+                      <option value="CUSTOMER">CUSTOMER</option>
+                      <option value="ENGINEER">ENGINEER</option>
+                    </select>
+                  </div>
 
-                  </select>
+                  <div className="input-group mb-3">
+                    <label className="label input-group-text label-md ">
+                      Status
+                    </label>
+                    <select
+                      name="status"
+                      className="form-select"
+                      value={userDetail.userStatus}
+                      onChange={changeUserDetail}
+                    >
+                      <option value="APPROVED">APPROVED</option>
+                      <option value="REJECTED">REJECTED</option>
+                      <option value="PENDING">PENDING</option>
+                    </select>
+                  </div>
                 </div>
-              
-
-                <div className="d-flex justify-content-end">
-                  <Button variant='secondary' className="m-1" onClick={() => closeTicketUpdationModal}>Cancel</Button>
-                  <Button variant='danger' className="m-1" type="submit">Update</Button>
-
+                <div className="input-group justify-content-center">
+                  <div className="m-1">
+                    <Button
+                      variant="secondary"
+                      onClick={() => closeUserModal()}
+                    >
+                      Close
+                    </Button>
+                  </div>
+                  <div className="m-1">
+                    <Button
+                      variant="primary"
+                      onClick={() => updateUserDetail()}
+                    >
+                      Update
+                    </Button>
+                  </div>
                 </div>
               </form>
             </Modal.Body>
+            <Modal.Footer></Modal.Footer>
           </Modal>
-        ) : null}
+        ) : (
+          ""
+        )}
+
         <hr />
-        <MaterialTable
-          title="USER DETAILS"
-          columns={userColumns}
-          // data={data}
-          options={{
-            filtering: true,
-            headerStyle: {
-              backgroundColor: "#d9534f",
-              color: "#fff",
-            },
-            rowStyle: {
-              backgroundColor: "#eee",
-            },
-            exportMenu: [
-              {
-                label: "Export Pdf",
-                exportFunc: (cols, data) =>
-                  ExportPdf(cols, data, "userRecords"),
-              },
-              {
-                label: "Export Csv",
-                exportFunc: (cols, data) =>
-                  ExportCsv(cols, data, "userRecords"),
-              },
-            ],
-          }}
-        />
       </div>
-      
-      <button className="btn btn-danger m-1" onClick={()=> setUserUpdationModal(true)}>Update user details</button>
     </div>
   );
 }

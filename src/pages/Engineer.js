@@ -157,7 +157,6 @@ function Engineer() {
           Welcome {localStorage.getItem("name")}!
         </h3>
         <p className="lead text-muted text-center">
-          {" "}
           Take a quick look at your engineer stats below!
         </p>
 
