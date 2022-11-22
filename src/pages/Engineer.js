@@ -73,6 +73,7 @@ function Engineer() {
     (async () => {
       fetchTickets();
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   // get all tickets list
   const fetchTickets = () => {
