@@ -72,6 +72,7 @@ function Admin() {
   // const [userDetails, setUserDetails] = useState([]);
   // open and close user modal
   const [userList, setUserList] = useState([]);
+  
   const [userDetail, setUserDetail] = useState({});
   const [ticketDetails, setTicketDetails] = useState([]);
   const [ticketUpdationModal, setTicketUpdationModal] = useState(false);
@@ -345,7 +346,6 @@ function Admin() {
               <form onSubmit={updateTicket}>
                 <div className="p-1">
                   <h5 className="card-subtitle mb-2 text-danger">
-                    {" "}
                     ID : {selectedCurrTicket.id}{" "}
                   </h5>
                 </div>

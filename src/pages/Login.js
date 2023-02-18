@@ -163,6 +163,9 @@ function Login() {
                           <Dropdown.Item eventKey="CUSTOMER">
                             CUSTOMER
                           </Dropdown.Item>
+                          <Dropdown.Item eventKey="CUSTOMER">
+                            CUSTOMER
+                          </Dropdown.Item>
                           <Dropdown.Item eventKey="ENGINEER">
                             ENGINEER
                           </Dropdown.Item>

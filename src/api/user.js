@@ -1,5 +1,7 @@
 import axios from "axios";
-const BASE_URL = "https://relevel-crm--backend.herokuapp.com";
+
+const BASE_URL = process.env.REACT_APP_BASE_URL
+
 export async function getAllUser(userId) {
   return await axios.get(
     `${BASE_URL}/crm/api/v1/users/${userId}`,

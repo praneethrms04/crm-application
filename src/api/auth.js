@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE_URL = "https://relevel-crm--backend.herokuapp.com" 
+const BASE_URL = process.env.REACT_APP_BASE_URL
 
 /*
 SIGNUP: 
@@ -9,6 +9,7 @@ url : /crm/api/v1/auth/signup
 data : userid, email, name, pw
  */
 
+// console.log(BASE_URL);
 export async function userSignup(data) {
     return await axios.post(`${BASE_URL}/crm/api/v1/auth/signup`, data); 
 }
