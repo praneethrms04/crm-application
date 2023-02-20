@@ -99,7 +99,7 @@ function Login() {
         >
           <div className="row m-2 ">
             <div>
-              <h4 className="text-center ">
+              <h4 className="text-center pb-3">
                 {showSignup ? "Sign up" : "Login"}
               </h4>
               <form onSubmit={showSignup ? signupFn : loginFn}>
