@@ -72,7 +72,7 @@ function Admin() {
   // const [userDetails, setUserDetails] = useState([]);
   // open and close user modal
   const [userList, setUserList] = useState([]);
-  
+
   const [userDetail, setUserDetail] = useState({});
   const [ticketDetails, setTicketDetails] = useState([]);
   const [ticketUpdationModal, setTicketUpdationModal] = useState(false);
@@ -168,6 +168,8 @@ function Admin() {
       selectedCurrTicket.ticketPriority = e.target.value;
     else if (e.target.name === "status")
       selectedCurrTicket.status = e.target.value;
+    else if (e.target.name === "assignee")
+      selectedCurrTicket.assignee = e.target.value;
     else if (e.target.name === "description")
       selectedCurrTicket.description = e.target.value;
 
@@ -192,6 +194,7 @@ function Admin() {
   const updateUserDetail = () => {
     const data = {
       userType: userDetail.userTypes,
+
       userStatus: userDetail.userStatus,
       userName: userDetail.name,
     };

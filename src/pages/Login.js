@@ -163,11 +163,12 @@ function Login() {
                           <Dropdown.Item eventKey="CUSTOMER">
                             CUSTOMER
                           </Dropdown.Item>
-                          <Dropdown.Item eventKey="CUSTOMER">
-                            CUSTOMER
-                          </Dropdown.Item>
                           <Dropdown.Item eventKey="ENGINEER">
+                            
                             ENGINEER
+                          </Dropdown.Item>
+                          <Dropdown.Item eventKey="ADMIN">
+                          ADMIN
                           </Dropdown.Item>
                         </DropdownButton>
                       </div>
@@ -181,7 +182,7 @@ function Login() {
                     value={showSignup ? "Sign Up" : "Log In"}
                   />
                 </div>
-                <div
+                <div style={{cursor: "pointer"}}
                   className="signup-btn text-center text-info"
                   onClick={toggleSignup}
                 >
